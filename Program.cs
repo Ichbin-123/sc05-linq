@@ -10,77 +10,91 @@ class Program
 {
     static void Main(string[] args)
     {
-        #region select syntax
-        int[] numbers = [5, 4, 1, 3, 9, 8, 6, 7, 2, 0];
-        var numPlusOne = numbers.Select(x => x + 1);
-        Logger.Titolo("Restituisci n+1");
-        Console.WriteLine(string.Join(", ", numPlusOne));
-        #endregion
-
-        #region select property
-        var productsNames = Products.ProductList.Select(x => x.ProductName);
-        Logger.Titolo("Solo nomi:");
-        foreach (var name in productsNames)
-        {
-            Console.WriteLine(name);
-        }
-        #endregion
-
-        #region select transform
-        string[] strings = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
-        var textNums = numbers.Select(n => strings[n]);
-        Logger.Titolo("Numeri in stringa ");
-        Console.WriteLine(string.Join(" ", textNums));
-        #endregion
-
-        #region select anonymous typs
-        var gigi = new { Nome = "Gigi", Cognome = "Verdi" };
-        Console.WriteLine(gigi.Cognome);
-
-        string[] words = ["aPPLE", "BlUeBeRrY", "cHeRry"];
-        var transformedWords = words.Select(x => new
-        {
-            UPPER = x.ToUpper(),
-            lower = x.ToLower()
-        });
-
-        Logger.Titolo("Upper/Lower");
-        foreach (var t in transformedWords)
-        {
-            Console.WriteLine($"UPPER: {t.UPPER}, lower: {t.lower}");
-        }
-
-        #endregion
-
-        #region select new type
-        var digitOddEvens = numbers.Select(x => new Dummy(strings[x], x % 2 == 0));
-        Logger.Titolo("Cifra/Pari/Dispari");
-        foreach (var d in digitOddEvens)
-        {
-            Console.WriteLine($"La cifra {d.Digit} è {(d.Even ? "pari" : "dispari")}.");
-        }
-
-        // var d = new Dummy
+        #region loading Datei
+        List<Customer> clienti = Customers.CustomerList;
+        Logger.Titolo("Caricamento Clienti");
+        Console.WriteLine(clienti.Count);
+        // foreach (Customer cliente in clienti)
         // {
-        //     Digit = "Uno",
-        //     Even = true
-        // };
-
+        //     Console.WriteLine(cliente);
+        // }
         #endregion
 
-        #region select subset properties
-        var productInfos = Products.ProductList.Where(x => x.UnitsInStock > 0).Select(x => new { x.ProductName, x.Category, Price = x.UnitPrice });
-        Logger.Titolo("Prodotti");
-        foreach (var productInfo in productInfos)
+        #region where condizione con proprietà + here in elenco
+        List<Customer> clientiUSA = clienti.Where(c => c.Country == "USA").ToList();
+        Logger.Titolo("Clienti USA");
+        int counter = 0;
+        foreach (var client in clientiUSA)
         {
-            Console.WriteLine($"{productInfo.ProductName} è nella categoria {productInfo.Category} e costa {productInfo.Price:C} per unità.");
+            counter++;
+            if (counter % 2 == 0)
+            {
+                Console.ForegroundColor = ConsoleColor.Blue;
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Magenta;
+            }
+            Console.WriteLine(client);
+        }
+        Console.ResetColor();
+        Console.Write($"Totale clienti USA: {clientiUSA.Count}");
+        List<Customer> clientiL = new List<Customer>();
+        try
+        {
+            clientiL = clientiUSA.Where(u => u.CompanyName.ToUpper().StartsWith('L')).ToList();
+            Logger.Titolo("Clienti USA il cui nome inizia con la Lettera L");
+            foreach (var client in clientiL)
+            {
+                counter++;
+                if (counter % 2 == 0)
+                {
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Magenta;
+                }
+                Console.WriteLine(client);
+
+            }
+            Console.ResetColor();
+            if (clientiL.Count > 0)
+            {
+                Console.Write($"Totale clienti USA il cui nome inizia con la lettera L: {clientiL.Count}\n\n");
+            }
+            else
+            {
+                throw new NullReferenceException();
+            }
+
+        }
+        catch (NullReferenceException)
+        {
+            Console.ResetColor();
+            Console.Write($"Non ci sono clienti negli USA che posseggono un nome che inizia con la 'L'\n\n");
         }
         #endregion
 
-
-
+        #region where condizione con proprietà Matrjoschka
+        decimal tassoDiCambio = 0.9m;
+        List<Cliente> nostriClienti;
+        Logger.Titolo("I nostri clienti nelle nostre Classi");
+        if (clientiL.Count > 0)
+        {
+            nostriClienti = clientiL.Select(x =>
+                new Cliente(x.CustomerID, x.CompanyName, x.Address, x.Orders.Select(y =>
+                new OrdineEuro(y.Total * tassoDiCambio, y.OrderDate)).ToList())).ToList();
+            foreach (Cliente cliente in nostriClienti)
+            {
+                Console.WriteLine(cliente);
+            }
+        }
+        else
+        {
+            Console.ResetColor();
+            Console.Write($"Non ci sono clienti negli USA che posseggono un nome che inizia con la 'L'. Il nostro Portafoglio Clienti è vuoto.");
+        }
+        #endregion
     }
 }
-
-
-

@@ -3,10 +3,6 @@ namespace sc_linq.Models;
 public class Dummy
 {
 
-    public Dummy()
-    {
-
-    }
     public Dummy(string digit, bool even)
     {
         Digit = digit;
